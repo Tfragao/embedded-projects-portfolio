@@ -1,0 +1,34 @@
+# Ignore IDE workspace and settings
+workspace-cubeide/
+.steconfig
+.settings/
+.mxproject
+.mdb
+
+# Build outputs
+Debug/
+Release/
+build/
+
+# Backup, swap, and unnecessary files
+*.swp
+*.swo
+*.user
+*.log
+*.bak
+*~
+*.ioc-backup
+*.ldb
+
+# Compiled files and map files
+*.elf
+*.hex
+*.bin
+*.map
+*.d
+*.o
+*.obj
+*.dep
+
+# VSCode (if you use it)
+.vscode/

@@ -1,0 +1,30 @@
+Setting Up an STM32CubeIDE Project in Your Local Git Repository
+
+Follow these steps to create and manage your STM32F446RE secure boot project in STM32CubeIDE, using your existing local Git repository for version control.
+1. Open Your Local Repository Folder
+
+    Navigate to your local repository folder (e.g., embedded-projects-portfolio/stm32f4-secure-boot/) using your file explorer or terminal.
+
+2. Launch STM32CubeIDE  (You can create an alias and save it in ~/.bashrc, ie.: alias cubeide='/opt/st/stm32cubeide_1.16.1/stm32cubeide')
+
+    2.1 run in the terminal: cubeide 
+
+    Open STM32CubeIDE.
+
+    When prompted for a workspace, you can select your main portfolio repo or a dedicated workspace folder.
+
+3. Create a New STM32 Project in the Repo Folder
+
+    Go to File > New > STM32 Project.
+
+    In the Board Selector, search for and select NUCLEO-F446RE.
+
+    Click Next.
+
+    For the Project Name, use a descriptive name (e.g., stm32f4-secure-boot).
+
+    Important: For the Project Location, click Browse and select your local repo subfolder (e.g., embedded-projects-portfolio/stm32f4-secure-boot/).
+
+        This ensures all generated files are inside your Git-tracked folder.
+
+    Click Finish.
