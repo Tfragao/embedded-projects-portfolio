@@ -28,3 +28,11 @@ Follow these steps to create and manage your STM32F446RE secure boot project in 
         This ensures all generated files are inside your Git-tracked folder.
 
     Click Finish.
+
+**************************************************************************************************************************************************
+				Reading
+
+RM0390 - Reference Manual for STM32F446xx -> (see boot, memory map, flash programming, and security chapters).
+
+AN2606 - System Memory Boot Mode
+(Good background, but not strictly needed unless you want to use the ROM bootloader).
