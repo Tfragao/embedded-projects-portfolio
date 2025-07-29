@@ -36,3 +36,19 @@ RM0390 - Reference Manual for STM32F446xx -> (see boot, memory map, flash progra
 
 AN2606 - System Memory Boot Mode
 (Good background, but not strictly needed unless you want to use the ROM bootloader).
+
+***************************************************************************************************************************************************
+
+                       Using USART PA2 amd PA3 on the board to see message
+
+After configuring the USART peripheral you can interact with the port to check the message printed. 
+
+1)List all serial Ports:  on Ubuntu (use which Linux distro you have accordingly) run : ls /dev/ttyUSB* /dev/ttyACM* 2>/dev/null
+	example output: /dev/ttyACM0
+2) To interact and see the message on the port, run: screen /dev/ttyACM0 115200
+
+To exit screen cleanly: 
+  Ctrl + A, then immediately press K
+  You will see a message:   
+    Really kill this window [y/n]
+
