@@ -20,7 +20,7 @@ On STM32F4 (which is not a TrustZone/secure hardware device), this is accomplish
 ## Getting Started
 
 ### Hardware Requirements
-- STM32F4 Discovery board
+- STM32F446RE Nucleo board (similar family would work too!)
 
 ### Software Requirements
 - GCC ARM toolchain

@@ -18,13 +18,14 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "crc.h"
 #include "usart.h"
 #include "gpio.h"
-#include "string.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <string.h>
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -34,6 +35,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define APP_START_ADDR    0x08008000U
+#define APP_IMAGE_SIZE    491516U           // In bytes, not including CRC!
+#define CRC_ADDR          (APP_START_ADDR + APP_IMAGE_SIZE)  // 0x0807FFFC
 
 /* USER CODE END PD */
 
@@ -43,7 +47,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-
+extern CRC_HandleTypeDef hcrc;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -51,6 +55,10 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+uint32_t calculate_app_crc(void);
+int check_app_valid(void);
+void jump_to_app(void);
+uint32_t sw_crc32(const uint8_t *data, uint32_t length);
 
 /* USER CODE END PFP */
 
@@ -89,28 +97,49 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-
+  MX_CRC_Init();
   /* USER CODE BEGIN 2 */
 
   //Configure LED GPIO
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
 
   char msg[] = "Bootloader active\r\n";
+  char valid_app_msg[] = "Valid application\r\n";
+  char validation_error_msg[] = "Could not validate the application\r\n";
 
   HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+
+  //TEST SW CRC32 calculation:
+  uint32_t sw_crc = sw_crc32((uint8_t*)APP_START_ADDR, APP_IMAGE_SIZE);
+  char sw_crc_msg[40];
+  snprintf(sw_crc_msg, sizeof(sw_crc_msg), "SW CRC: 0x%08lX\n", (unsigned long)sw_crc);
+  HAL_UART_Transmit(&huart2, (uint8_t*)sw_crc_msg, strlen(sw_crc_msg), HAL_MAX_DELAY);
+
+
+  if (check_app_valid()) {
+	  HAL_UART_Transmit(&huart2, (uint8_t*)valid_app_msg, strlen(valid_app_msg), HAL_MAX_DELAY);
+	  HAL_Delay(100);
+	  jump_to_app();
+  } else {
+	  while (1){
+		  HAL_UART_Transmit(&huart2, (uint8_t*)validation_error_msg, strlen(validation_error_msg), HAL_MAX_DELAY);
+		  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		  HAL_Delay(500);
+	  }
+  }
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-	HAL_Delay(500);
-  }
+//  while (1)
+//  {
+//    /* USER CODE END WHILE */
+//
+//    /* USER CODE BEGIN 3 */
+//	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+//	HAL_Delay(500);
+//  }
   /* USER CODE END 3 */
 }
 
@@ -162,6 +191,89 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+/**
+  * @brief  CRC calculation function.
+  * @retval uint32_t
+  */
+uint32_t calculate_app_crc(void)
+{
+	//STM32 HAL's CRC requires input in 32-bit words.
+	uint32_t word_count = APP_IMAGE_SIZE / 4;
+
+	//TEST
+	char msg1[40];
+	for (uint32_t i = 0; i < 4; ++i) {
+	    snprintf(msg1, sizeof(msg1), "Word %lu: 0x%08lX\r\n", i, *((uint32_t*)APP_START_ADDR + i));
+	    HAL_UART_Transmit(&huart2, (uint8_t*)msg1, strlen(msg1), HAL_MAX_DELAY);
+	}
+
+	char msg2[40];
+	for (uint32_t i = word_count - 4; i < word_count; ++i) {
+		snprintf(msg2, sizeof(msg2), "Last word %lu: 0x%08lX\n", i, *((uint32_t*)APP_START_ADDR + i));
+		HAL_UART_Transmit(&huart2, (uint8_t*)msg2, strlen(msg2), HAL_MAX_DELAY);
+	}
+
+	char msg3[40];
+	snprintf(msg3, sizeof(msg3), "CRC control register: 0x%08lX\n", (unsigned long)hcrc.Instance->CR);
+	HAL_UART_Transmit(&huart2, (uint8_t*)msg3, strlen(msg3), HAL_MAX_DELAY);
+
+	//You can remove the above printfs
+
+	//return HAL_CRC_Calculate(&hcrc, (uint32_t*)APP_START_ADDR, word_count);
+	uint32_t sw_crc = sw_crc32((uint8_t*)APP_START_ADDR, APP_IMAGE_SIZE);
+	return sw_crc;
+}
+
+/**
+  * @brief  application validation function.
+  * @retval int
+  */
+int check_app_valid(void)
+{
+	uint32_t crc_calculated = calculate_app_crc();
+	uint32_t crc_stored = *(uint32_t*)CRC_ADDR;
+	return (crc_calculated == crc_stored);
+}
+
+/**
+  * @brief  jump to application function.
+  * This function is executed if CRC match, the bootloader will jump here.
+  * @retval uint32_t
+  */
+void jump_to_app(void)
+{
+	//Read vector table (SP) and Reset handler of the app
+	uint32_t app_sp = *(uint32_t*)APP_START_ADDR;
+	uint32_t app_entry = *(uint32_t*)(APP_START_ADDR + 4); //gives the reset handler address
+
+	//set SP to app
+	__set_MSP(app_sp);
+
+	void (*app_reset_handler)(void) = (void (*)(void))app_entry;
+
+	//jump
+	app_reset_handler();
+}
+
+/**
+  * @brief  SW CRC32 calculation
+  * @retval uint32_t
+  */
+uint32_t sw_crc32(const uint8_t *data, uint32_t length) {
+    uint32_t crc = 0xFFFFFFFF;
+    for (uint32_t i = 0; i < length; ++i) {
+        crc ^= data[i];
+        for (uint8_t j = 0; j < 8; ++j) {
+            if (crc & 1)
+                crc = (crc >> 1) ^ 0xEDB88320;
+            else
+                crc >>= 1;
+        }
+    }
+    return crc ^ 0xFFFFFFFF;
+}
+
 
 /* USER CODE END 4 */
 
