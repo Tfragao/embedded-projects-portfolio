@@ -55,3 +55,17 @@ To exit screen cleanly:
 To push to the dev branch: git push origin dev
 
 ***************************************************************************************************************************************************
+ To keep in mind:
+
+    feat → a new feature you’ve added.
+
+    fix → a bug fix.
+
+    docs → documentation changes.
+
+    refactor → code change that doesn’t fix a bug or add a feature.
+
+    test → adding or modifying tests.
+
+    chore → maintenance, build scripts, etc.
+***************************************************************************************************************************************************

@@ -110,10 +110,10 @@ int main(void)
   HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 
   //TEST SW CRC32 calculation:
-  uint32_t sw_crc = sw_crc32((uint8_t*)APP_START_ADDR, APP_IMAGE_SIZE);
-  char sw_crc_msg[40];
-  snprintf(sw_crc_msg, sizeof(sw_crc_msg), "SW CRC: 0x%08lX\n", (unsigned long)sw_crc);
-  HAL_UART_Transmit(&huart2, (uint8_t*)sw_crc_msg, strlen(sw_crc_msg), HAL_MAX_DELAY);
+  //uint32_t sw_crc = sw_crc32((uint8_t*)APP_START_ADDR, APP_IMAGE_SIZE);
+  //char sw_crc_msg[40];
+  //snprintf(sw_crc_msg, sizeof(sw_crc_msg), "SW CRC: 0x%08lX\n", (unsigned long)sw_crc);
+  //HAL_UART_Transmit(&huart2, (uint8_t*)sw_crc_msg, strlen(sw_crc_msg), HAL_MAX_DELAY);
 
 
   if (check_app_valid()) {
@@ -199,26 +199,25 @@ void SystemClock_Config(void)
 uint32_t calculate_app_crc(void)
 {
 	//STM32 HAL's CRC requires input in 32-bit words.
+
 	uint32_t word_count = APP_IMAGE_SIZE / 4;
 
 	//TEST
 	char msg1[40];
 	for (uint32_t i = 0; i < 4; ++i) {
-	    snprintf(msg1, sizeof(msg1), "Word %lu: 0x%08lX\r\n", i, *((uint32_t*)APP_START_ADDR + i));
+	    //snprintf(msg1, sizeof(msg1), "Word %lu: 0x%08lX\r\n", i, *((uint32_t*)APP_START_ADDR + i));
 	    HAL_UART_Transmit(&huart2, (uint8_t*)msg1, strlen(msg1), HAL_MAX_DELAY);
 	}
 
 	char msg2[40];
 	for (uint32_t i = word_count - 4; i < word_count; ++i) {
-		snprintf(msg2, sizeof(msg2), "Last word %lu: 0x%08lX\n", i, *((uint32_t*)APP_START_ADDR + i));
+		//snprintf(msg2, sizeof(msg2), "Last word %lu: 0x%08lX\n", i, *((uint32_t*)APP_START_ADDR + i));
 		HAL_UART_Transmit(&huart2, (uint8_t*)msg2, strlen(msg2), HAL_MAX_DELAY);
 	}
 
 	char msg3[40];
-	snprintf(msg3, sizeof(msg3), "CRC control register: 0x%08lX\n", (unsigned long)hcrc.Instance->CR);
+	//snprintf(msg3, sizeof(msg3), "CRC control register: 0x%08lX\n", (unsigned long)hcrc.Instance->CR);
 	HAL_UART_Transmit(&huart2, (uint8_t*)msg3, strlen(msg3), HAL_MAX_DELAY);
-
-	//You can remove the above printfs
 
 	//return HAL_CRC_Calculate(&hcrc, (uint32_t*)APP_START_ADDR, word_count);
 	uint32_t sw_crc = sw_crc32((uint8_t*)APP_START_ADDR, APP_IMAGE_SIZE);
