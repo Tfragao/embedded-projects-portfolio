@@ -42,10 +42,10 @@ Every push automatically:
 
 ## Example Serial Output
 **Bootloader (valid CRC):**<br>
- Bootloader active <br>
- Valid application
-**Application after jump:**<br>
-    - Hello from app - this is a test to check if bootloader jumps here.<br>
+ 	Bootloader active <br>
+ 	Valid application<br>
+**Application after jump:**
+ 	Hello from app - this is a test to check if bootloader jumps here.<br>
 
 ## Extensibility
 - Easily extended to support OTA updates
