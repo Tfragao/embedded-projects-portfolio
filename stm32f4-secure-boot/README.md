@@ -1,7 +1,7 @@
-# STM32F4 Secure Boot Implementation
+# STM32F4xxRE NUCLEO Secure Bootloader & Verified App Implementation
 
 ## Overview
-This project demonstrates a secure bootloader for the STM32F4 platform, verifying firmware authenticity using cryptographic signatures.
+This project demonstrates secure bootloader system for STM32F446RE family, ready for industry use in IoT and embedded applications.
 
 **Secure boot** on STM32 MCUs means your microcontroller will:
  - Boot only code you (or a trusted authority) approve, **verifying the firmware before running it.**
@@ -13,18 +13,45 @@ On STM32F4 (which is not a TrustZone/secure hardware device), this is accomplish
  - An application firmware: only launched if validated by the bootloader.
 
 ## Features
-- Secure boot with firmware signature verification
-- Written in C, tested with Google Test
-- Example firmware and test suite included
+- **CRC32-based integrity check for firmware images**
+- **Safe bootloader/app separation & upgrade workflow**
+- **UART/LED feedback for robust user diagnostics**
+- **Secure boot with firmware signature verification** (To be added later on)
+- **Automated CI/CD build/test pipeline (see .github/workflows/)**
 
-## Getting Started
+## Build & Usage
+
+1. **Build the bootloader and application** using CubeIDE or make.
+2. **Prepare the application binary:**  
+   `python3 prepare_app_with_crc.py`  
+   (pads, appends CRC, creates `app_with_crc.bin`)
+3. **Flash images to target device:**  
+   - Bootloader: `0x08000000`
+   - App: `0x08008000`
 
 ### Hardware Requirements
-- STM32F446RE Nucleo board (similar family would work too!)
+- STM32F446RE Nucleo board 
+- USB cable
 
-### Software Requirements
-- GCC ARM toolchain
-- OpenOCD
-- CMake/Make
+## CI/CD Pipeline
+Every push automatically:
+- Builds both binaries
+- Pads/calculates/appends CRC to application
+- Ensures testable, ready-to-flash output
+- Publishes binaries as release artifacts
 
-### Build Instructions
+## Example Serial Output
+**Bootloader (valid CRC):**
+Bootloader active
+Valid application
+**Application after jump:**
+Hello from app - this is a test to check if bootloader jumps here.
+
+## Extensibility
+- Easily extended to support OTA updates
+- Add versioning, authentication, rollback protection as needed
+## Contact & Questions
+
+Taison Nhanga Fragao
+www.linkedin.com/in/taison-fragao
+Open to feedback and collaboration!
