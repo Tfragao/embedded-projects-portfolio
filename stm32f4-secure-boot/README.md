@@ -41,17 +41,17 @@ Every push automatically:
 - Publishes binaries as release artifacts
 
 ## Example Serial Output
-**Bootloader (valid CRC):**
-Bootloader active
-Valid application
-**Application after jump:**
-Hello from app - this is a test to check if bootloader jumps here.
+**Bootloader (valid CRC):**<br>
+ Bootloader active <br>
+ Valid application
+**Application after jump:**<br>
+    - Hello from app - this is a test to check if bootloader jumps here.<br>
 
 ## Extensibility
 - Easily extended to support OTA updates
 - Add versioning, authentication, rollback protection as needed
 ## Contact & Questions
 
-Taison Nhanga Fragao
-www.linkedin.com/in/taison-fragao
-Open to feedback and collaboration!
+Taison Nhanga Fragao<br>
+www.linkedin.com/in/taison-fragao<br>
+Open to feedback and collaboration!<br>
