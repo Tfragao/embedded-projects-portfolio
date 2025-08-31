@@ -69,3 +69,51 @@ To push to the dev branch: git push origin dev
 
     chore → maintenance, build scripts, etc.
 ***************************************************************************************************************************************************
+The vector table is a fundamental structure for ARM Cortex-M microcontrollers, including STM32F4. Here's how it works and its relationship with the stack pointer (SP):
+Vector Table Role
+
+    The vector table is located at the beginning of flash memory (typically address 0x08000000 for STM32).
+
+    It contains a sequence of 32-bit entries. The first entry is the initial value for the main stack pointer (MSP), and the second entry is the address of the reset handler (the entry point to your code).
+
+    The rest of the table contains addresses for exception and interrupt handlers (hard fault, SysTick, peripheral interrupts, etc).
+
+Startup Sequence and SP Relation
+
+    On reset (boot or after a jump):
+
+        The ARM Cortex-M core fetches the first word at the vector table address—this is loaded into the MSP (main stack pointer).
+
+    It then fetches the second word at the vector table address—that’s the reset handler (your startup code or main).
+
+Why is SP so important?
+
+    Every interrupt, exception, or function call relies on the stack pointer being valid and pointing to real, writeable RAM. If it points outside RAM—into flash or reserved areas—the CPU will crash (hard fault) as soon as an interrupt or push/pop occurs.
+
+    That’s why the bootloader (or any “jump to app” logic) must always verify that the stack pointer in the app’s vector table is inside real RAM: it’s a safety check to avoid attempting to run corrupted or malformed code.
+
+Bootloader Jump Sequence
+
+For a bootloader to correctly hand control to an app:
+
+    Reads app vector table (at app start address):
+
+        uint32_t app_sp = *(uint32_t*)APP_START_ADDR; // Stack pointer value
+
+        uint32_t app_entry = *(uint32_t*)(APP_START_ADDR + 4); // Reset handler
+
+    Checks that app_sp is within RAM (e.g., 0x20000000–0x2001FFFF)
+
+    Sets main stack pointer:**
+
+        __set_MSP(app_sp);
+
+    Jumps to reset handler:
+
+        ((void (*)(void))app_entry)();
+        This begins executing the app as if at reset, with interrupts and stack functioning safely.
+
+
+The stack pointer in the vector table is the safety anchor for ANY jump to application.
+Ensuring it points to valid RAM guarantees the MCU runs safely—no hard faults as soon as an ISR or stack access occurs.
+*********************************************************************************************************************************************************

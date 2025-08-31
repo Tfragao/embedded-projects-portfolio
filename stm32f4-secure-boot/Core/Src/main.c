@@ -38,6 +38,8 @@
 #define APP_START_ADDR    0x08008000U
 #define APP_IMAGE_SIZE    491516U           // In bytes, not including CRC!
 #define CRC_ADDR          (APP_START_ADDR + APP_IMAGE_SIZE)  // 0x0807FFFC
+#define RAM_START         0x20000000U
+#define RAM_END           0x20020000U
 
 /* USER CODE END PD */
 
@@ -108,13 +110,6 @@ int main(void)
   char validation_error_msg[] = "Could not validate the application\r\n";
 
   HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-
-  //TEST SW CRC32 calculation:
-  //uint32_t sw_crc = sw_crc32((uint8_t*)APP_START_ADDR, APP_IMAGE_SIZE);
-  //char sw_crc_msg[40];
-  //snprintf(sw_crc_msg, sizeof(sw_crc_msg), "SW CRC: 0x%08lX\n", (unsigned long)sw_crc);
-  //HAL_UART_Transmit(&huart2, (uint8_t*)sw_crc_msg, strlen(sw_crc_msg), HAL_MAX_DELAY);
-
 
   if (check_app_valid()) {
 	  HAL_UART_Transmit(&huart2, (uint8_t*)valid_app_msg, strlen(valid_app_msg), HAL_MAX_DELAY);
@@ -243,8 +238,16 @@ int check_app_valid(void)
 void jump_to_app(void)
 {
 	//Read vector table (SP) and Reset handler of the app
-	uint32_t app_sp = *(uint32_t*)APP_START_ADDR;
+	uint32_t app_sp = *(uint32_t*)APP_START_ADDR;  //stack pointer value
 	uint32_t app_entry = *(uint32_t*)(APP_START_ADDR + 4); //gives the reset handler address
+
+	// Validate stack pointer (SP) and entry address
+	if ((app_sp < RAM_START || app_sp > RAM_END) ||
+	    (app_entry < APP_START_ADDR || app_entry >= (APP_START_ADDR + APP_IMAGE_SIZE))) {
+		char err[] = "App vector table invalid.\r\n";
+		HAL_UART_Transmit(&huart2, (uint8_t*)err, strlen(err), HAL_MAX_DELAY);
+		return; //stay in bootloader
+	}
 
 	//set SP to app
 	__set_MSP(app_sp);
