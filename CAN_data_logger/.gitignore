@@ -1,0 +1,32 @@
+# STM32CubeIDE build outputs
+CAN_data_logger/Debug/
+CAN_data_logger/Release/
+CAN_data_logger/build/
+
+# STM32CubeIDE user settings
+CAN_data_logger/.settings/
+CAN_data_logger/.mxproject
+CAN_data_logger/.mdb
+
+# Compiled and intermediate files
+CAN_data_logger/*.elf
+CAN_data_logger/*.hex
+CAN_data_logger/*.bin
+CAN_data_logger/*.map
+CAN_data_logger/*.d
+CAN_data_logger/*.o
+CAN_data_logger/*.obj
+CAN_data_logger/*.dep
+
+# Temporary and backup files
+CAN_data_logger/*.swp
+CAN_data_logger/*.swo
+CAN_data_logger/*.user
+CAN_data_logger/*.log
+CAN_data_logger/*.bak
+CAN_data_logger/*~
+CAN_data_logger/*.ioc-backup
+CAN_data_logger/*.ldb
+
+# Ignore VSCode settings if used
+CAN_data_logger/.vscode/
