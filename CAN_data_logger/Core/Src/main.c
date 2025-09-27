@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "can_app.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -31,6 +31,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define DATA_LENGTH 8
 
 /* USER CODE END PD */
 
@@ -94,16 +95,19 @@ int main(void)
   MX_USART2_UART_Init();
   MX_CAN1_Init();
   /* USER CODE BEGIN 2 */
-
+  CAN_Config();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  uint8_t sensor_data[] = {33, 25, 100, 89, 5, 6, 0};
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  CAN_Send(sensor_data, DATA_LENGTH);
+	  HAL_Delay(3000);
   }
   /* USER CODE END 3 */
 }
