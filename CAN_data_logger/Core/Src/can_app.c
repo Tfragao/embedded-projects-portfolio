@@ -7,6 +7,8 @@
 
 #include "can_app.h"
 #include "main.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 extern CAN_HandleTypeDef hcan1;
 uint8_t RxData[CAN_DATA_BUFFER_SIZE];
@@ -65,6 +67,24 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
     	HAL_GPIO_WritePin(CAN_LED_GPIO_PORT, CAN_LED_GPIO_PIN, GPIO_PIN_SET);
     } else {
     	HAL_GPIO_WritePin(CAN_LED_GPIO_PORT, CAN_LED_GPIO_PIN, GPIO_PIN_RESET);
+    }
+}
+
+/**
+ * @brief FreeRTOS task to periodically send a CAN message.
+ *
+ * This task repeatedly transmits a predefined CAN data frame every 3 seconds
+ * using the CAN_Send() function. Intended to be created and managed by the
+ * FreeRTOS scheduler. The task runs in an infinite loop and should not return.
+ *
+ * @param arg FreeRTOS task argument pointer (unused).
+ */
+void StartCANTxTask(void *arg)
+{
+    uint8_t sensor_data[] = {33, 25, 100, 89, 5, 6, 0};
+    for(;;) {
+        CAN_Send(sensor_data, CAN_DATA_LENGTH);
+        vTaskDelay(pdMS_TO_TICKS(3000));
     }
 }
 

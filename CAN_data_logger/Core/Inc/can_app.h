@@ -10,6 +10,7 @@
 
 #include "stm32f4xx_hal.h"
 
+
 #define CAN_DATA_BUFFER_SIZE       8
 
 //0x446:  acts as a specific marker so the code only reacts to messages with this identifier,
@@ -24,7 +25,10 @@
 #define CAN_LED_GPIO_PORT         GPIOC
 #define CAN_LED_GPIO_PIN		  GPIO_PIN_8
 
+#define CAN_DATA_LENGTH 		  8
+
 void CAN_Config(void);
 void CAN_Send(uint8_t *data, uint8_t len);
+void StartCANTxTask(void *arg);
 
 #endif /* INC_CAN_APP_H_ */

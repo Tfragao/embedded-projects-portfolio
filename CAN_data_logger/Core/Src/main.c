@@ -33,7 +33,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define DATA_LENGTH 8
 
 /* USER CODE END PD */
 
@@ -56,6 +55,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_CAN1_Init(void);
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -98,18 +98,25 @@ int main(void)
   MX_CAN1_Init();
   /* USER CODE BEGIN 2 */
   CAN_Config();
+
+  //Creates CAN Tx task
+  xTaskCreate(StartCANTxTask, "CANTx", 128, NULL, tskIDLE_PRIORITY + 1, NULL);
+
+  //Start the Scheduler
+  vTaskStartScheduler();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint8_t sensor_data[] = {33, 25, 100, 89, 5, 6, 0};
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  CAN_Send(sensor_data, DATA_LENGTH);
-	  HAL_Delay(3000);
+
+	/* Should never hit here if scheduler runs */
+
   }
   /* USER CODE END 3 */
 }
@@ -279,6 +286,26 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+/**
+ * @brief  Application-defined hook function called on FreeRTOS stack overflow.
+ *
+ * This function is called by the FreeRTOS kernel when a stack overflow is detected
+ * in any task, provided that stack overflow checking is enabled via
+ * configCHECK_FOR_STACK_OVERFLOW. It allows the application to handle the error,
+ * perform logging, reset the system, or implement a safe fail-state.
+ *
+ * @param xTask      Handle of the task that triggered the stack overflow.
+ * @param pcTaskName Human-readable name of the task or NULL if not set.
+ */
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
+{
+    /* Optional: add breakpoint, log error, blink LED, etc. */
+    (void)xTask;
+    (void)pcTaskName;
+    while(1){ /* Trap here on stack overflow */ }
+}
+
 
 /* USER CODE END 4 */
 
